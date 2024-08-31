@@ -2,32 +2,25 @@ import 'dotenv/config';
 import TelegramBot from 'node-telegram-bot-api';
 
 import C from './constants/constants.js';
-import { getAvailableTickers } from './services/loadTickersDataFromApi.js';
+import { getAvailableTickers } from './services/load-tickers-data-from-api.js';
+import { stringifyCommandMessages, checkTicker } from './utils/utils.js';
+import CommandMessages from './constants/command-messages.js';
 
-const startApp = async () => {
-  const tickers = await getAvailableTickers();
-  console.log(tickers[100]);
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+let watchedTickers = [];
 
-  const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-
-  const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-
-  const commands = {
-    [C.LIST]: 'Show all watched coins',
-    [C.HELP]: 'Show avilable commands',
-    [C.ADD]: 'Add new coin subscription ("/add NEW_COIN_NAME")',
-    [C.REMOVE]: 'Remove coin subscription ("/remove COIN_NAME")',
-  };
-
-  let helpMessage = Object.entries(commands)
-    .map(item => `${item[0]} - ${item[1]}`)
-    .join('\n');
-
+const addTelegramEventsListener = (bot, availableTickers) => {
   bot.on('message', msg => {
     const chatId = msg.chat.id;
-    const messageText = msg.text;
+    const splitedMessageText = msg.text.split(' ');
+    const command = splitedMessageText.at(0);
+    const ticker = splitedMessageText[1]
+      ? splitedMessageText[1].toUpperCase()
+      : '';
 
-    switch (messageText) {
+    const helpMessage = stringifyCommandMessages(CommandMessages);
+
+    switch (command) {
       case C.START:
         bot.sendMessage(chatId, helpMessage);
         break;
@@ -35,19 +28,46 @@ const startApp = async () => {
         bot.sendMessage(chatId, helpMessage);
         break;
       case C.LIST:
-        bot.sendMessage(chatId, '/list');
+        bot.sendMessage(chatId, watchedTickers.join(', '));
         break;
       case C.ADD:
-        bot.sendMessage(chatId, '/add');
+        if (!ticker) {
+          bot.sendMessage(chatId, 'Enter ticker name!');
+          break;
+        }
+
+        if (!checkTicker(ticker, availableTickers)) {
+          bot.sendMessage(chatId, 'Unknown ticker! Try again.');
+          break;
+        }
+
+        if (watchedTickers.includes(ticker)) {
+          bot.sendMessage(chatId, 'Ticker alraedy added!');
+          break;
+        }
+
+        watchedTickers.push(ticker);
+        bot.sendMessage(chatId, `Ticker ${ticker} added successfully!`);
         break;
       case C.REMOVE:
-        bot.sendMessage(chatId, '/remove');
+        if (!ticker) {
+          bot.sendMessage(chatId, 'Enter ticker name!');
+          break;
+        }
+        watchedTickers = watchedTickers.filter(t => t !== ticker);
+        bot.sendMessage(chatId, `Ticker ${ticker} removed successfully!`);
         break;
       default:
-        bot.sendMessage(chatId, helpMessage);
+        bot.sendMessage(chatId, 'helpMessage');
         break;
     }
   });
+};
+
+const startApp = async () => {
+  const availableTickers = await getAvailableTickers();
+  const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+  addTelegramEventsListener(bot, availableTickers);
 };
 
 startApp();
