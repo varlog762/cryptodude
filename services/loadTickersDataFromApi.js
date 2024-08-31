@@ -1,7 +1,26 @@
+import axios from 'axios';
+
 import C from '../constants/constants.js';
 
-export const getAvailableTickers = tickerName => {
-  const response = fetch(C.LOAD_TICKERS_URL);
+export const getAvailableTickers = async tickerName => {
+  try {
+    const response = await axios.get(C.LOAD_TICKERS_URL);
 
-  response.then(data => data.json());
+    if (response.status !== 200) {
+      throw new Error('Tickers loading failed!');
+    }
+
+    const data = response.data.Data;
+
+    if (data) {
+      return Object.values(data).map(ticker => ({
+        symbol: ticker?.Symbol,
+        fullName: ticker?.FullName,
+      }));
+    }
+
+    throw new Error('Bad response');
+  } catch (error) {
+    console.log(error);
+  }
 };
