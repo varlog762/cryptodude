@@ -5,6 +5,7 @@ import C from './constants/constants.js';
 import { getAvailableTickers } from './services/load-tickers-data-from-api.js';
 import { stringifyCommandMessages, checkTicker } from './utils/utils.js';
 import CommandMessages from './constants/command-messages.js';
+import { subscribeToTickerUpdates } from './services/create-websocket-connection.js';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 let watchedTickers = [];
@@ -28,6 +29,10 @@ const addTelegramEventsListener = (bot, availableTickers) => {
         bot.sendMessage(chatId, helpMessage);
         break;
       case C.LIST:
+        if (!watchedTickers.length) {
+          bot.sendMessage(chatId, "There aren't added tickers!");
+          break;
+        }
         bot.sendMessage(chatId, watchedTickers.join(', '));
         break;
       case C.ADD:
@@ -47,6 +52,7 @@ const addTelegramEventsListener = (bot, availableTickers) => {
         }
 
         watchedTickers.push(ticker);
+        subscribeToTickerUpdates(ticker);
         bot.sendMessage(chatId, `Ticker ${ticker} added successfully!`);
         break;
       case C.REMOVE:
