@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 
 import C from '../constants/constants.js';
 
-const socket = new WebSocket(C.BINANCE_WS_URL);
+const socket = new WebSocket(C.OKX_WS_URL);
 
 socket.on('open', () => {
   console.log('Connected to Binance WebSocket');
