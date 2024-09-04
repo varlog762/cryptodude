@@ -7,3 +7,14 @@ export const stringifyCommandMessages = messageObjaect =>
   Object.entries(messageObjaect)
     .map(item => `${item[0]} - ${item[1]}`)
     .join('\n');
+
+export const createMessageForWebSocket = tickerName =>
+  JSON.stringify({
+    op: 'subscribe',
+    args: [
+      {
+        channel: 'tickers',
+        instId: `${tickerName}-USDT`,
+      },
+    ],
+  });
