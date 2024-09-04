@@ -2,7 +2,8 @@ import axios from 'axios';
 
 import C from '../constants/constants.js';
 
-export const getAvailableTickers = async tickerName => {
+// eslint-disable-next-line consistent-return
+export default async () => {
   try {
     const response = await axios.get(C.LOAD_TICKERS_URL);
 

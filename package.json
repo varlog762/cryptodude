@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node ./app.js",
-    "dev": "nodemon ./app.js localhost 8080"
+    "dev": "nodemon ./app.js localhost 8080",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",

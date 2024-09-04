@@ -1,7 +1,9 @@
+import { EventEmitter } from 'node:events';
 import WebSocket from 'ws';
 
 import C from '../constants/constants.js';
 
+const emitter = new EventEmitter();
 const socket = new WebSocket(C.OKX_WS_URL);
 
 socket.on('open', () => {
@@ -10,16 +12,15 @@ socket.on('open', () => {
 
 socket.on('message', data => {
   const message = JSON.parse(data);
-  let count = [];
 
   if (message.event !== 'error' && message.data) {
     console.log(`Received data:`, message?.data.at(0));
+    emitter.emit('hello');
   }
-  console.log(count.length);
 });
 
-const createMessageForWebSocket = ticker => {
-  return JSON.stringify({
+const createMessageForWebSocket = ticker =>
+  JSON.stringify({
     op: 'subscribe',
     args: [
       {
@@ -28,8 +29,8 @@ const createMessageForWebSocket = ticker => {
       },
     ],
   });
-};
 
+// eslint-disable-next-line import/prefer-default-export
 export const subscribeToTickerUpdates = ticker => {
   try {
     const message = createMessageForWebSocket(ticker);

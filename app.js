@@ -1,14 +1,16 @@
 import 'dotenv/config';
+import { EventEmitter } from 'node:events';
 import TelegramBot from 'node-telegram-bot-api';
 
 import C from './constants/constants.js';
-import { getAvailableTickers } from './services/load-tickers-data-from-api.js';
-import { stringifyCommandMessages, checkTicker } from './utils/utils.js';
+import GetAvailableTickers from './services/load-tickers-data-from-api.js';
+import { stringifyCommandMessages, isTickerAvailable } from './utils/utils.js';
 import CommandMessages from './constants/command-messages.js';
 import { subscribeToTickerUpdates } from './services/create-websocket-connection.js';
 
-const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-let watchedTickers = [];
+const { TELEGRAM_TOKEN } = process.env;
+
+const emitter = new EventEmitter();
 
 const addTelegramEventsListener = (bot, availableTickers) => {
   bot.on('message', msg => {
@@ -29,11 +31,11 @@ const addTelegramEventsListener = (bot, availableTickers) => {
         bot.sendMessage(chatId, helpMessage);
         break;
       case C.LIST:
-        if (!watchedTickers.length) {
-          bot.sendMessage(chatId, "There aren't added tickers!");
-          break;
-        }
-        bot.sendMessage(chatId, watchedTickers.join(', '));
+        // if (!watchedTickers.length) {
+        //   bot.sendMessage(chatId, "There aren't added tickers!");
+        //   break;
+        // }
+        // bot.sendMessage(chatId, watchedTickers.join(', '));
         break;
       case C.ADD:
         if (!ticker) {
@@ -41,17 +43,16 @@ const addTelegramEventsListener = (bot, availableTickers) => {
           break;
         }
 
-        if (!checkTicker(ticker, availableTickers)) {
+        if (!isTickerAvailable(ticker, availableTickers)) {
           bot.sendMessage(chatId, 'Unknown ticker! Try again.');
           break;
         }
 
-        if (watchedTickers.includes(ticker)) {
-          bot.sendMessage(chatId, 'Ticker alraedy added!');
-          break;
-        }
+        // if (watchedTickers.includes(ticker)) {
+        //   bot.sendMessage(chatId, 'Ticker alraedy added!');
+        //   break;
+        // }
 
-        watchedTickers.push(ticker);
         subscribeToTickerUpdates(ticker);
         bot.sendMessage(chatId, `Ticker ${ticker} added successfully!`);
         break;
@@ -60,7 +61,7 @@ const addTelegramEventsListener = (bot, availableTickers) => {
           bot.sendMessage(chatId, 'Enter ticker name!');
           break;
         }
-        watchedTickers = watchedTickers.filter(t => t !== ticker);
+        // watchedTickers = watchedTickers.filter(t => t !== ticker);
         bot.sendMessage(chatId, `Ticker ${ticker} removed successfully!`);
         break;
       default:
@@ -71,9 +72,11 @@ const addTelegramEventsListener = (bot, availableTickers) => {
 };
 
 const startApp = async () => {
-  const availableTickers = await getAvailableTickers();
+  const availableTickers = await GetAvailableTickers();
   const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
   addTelegramEventsListener(bot, availableTickers);
+
+  emitter.on('hello', () => bot.sendMessage('Hello!'));
 };
 
 startApp();
