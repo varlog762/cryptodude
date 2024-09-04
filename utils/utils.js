@@ -1,4 +1,4 @@
-export const checkTicker = (tickerName, tickersCollection) => {
+export const isTickerAvailable = (tickerName, tickersCollection) => {
   return tickersCollection.some(t => {
     return t.fullName.toLowerCase().includes(tickerName.toLowerCase());
   });

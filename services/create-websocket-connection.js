@@ -5,29 +5,34 @@ import C from '../constants/constants.js';
 const socket = new WebSocket(C.OKX_WS_URL);
 
 socket.on('open', () => {
-  console.log('Connected to Binance WebSocket');
+  console.log('Connected to WebSocket');
 });
 
 socket.on('message', data => {
   const message = JSON.parse(data);
-  console.log(message);
+  let count = [];
+
+  if (message.event !== 'error' && message.data) {
+    console.log(`Received data:`, message?.data.at(0));
+  }
+  console.log(count.length);
 });
 
 const createMessageForWebSocket = ticker => {
   return JSON.stringify({
-    method: 'SUBSCRIBE',
-    params: [
-      `${ticker.toLowerCase()}usdt@aggTrade`,
-      `${ticker.toLowerCase()}usdt@depth`,
+    op: 'subscribe',
+    args: [
+      {
+        channel: 'tickers',
+        instId: `${ticker}-USDT`,
+      },
     ],
-    id: Date.now(),
   });
 };
 
 export const subscribeToTickerUpdates = ticker => {
   try {
     const message = createMessageForWebSocket(ticker);
-    console.log(message);
     socket.send(message);
   } catch (error) {
     console.log(error);
