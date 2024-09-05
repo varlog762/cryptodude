@@ -1,10 +1,8 @@
-import C from './constants.js';
+import c from './constants.js';
 
 export default {
-  [C.LIST]: 'Show all watched coins',
-  [C.HELP]: 'Show avilable commands',
-  [C.ADD]:
-    'Add new coin subscription ("/add FIRST_CURRENCY-SECOND_CURRENCY START_PRICE-END_PRICE")',
-  [C.REMOVE]:
-    'Remove coin subscription ("/remove FIRST_CURRENCY-SECOND_CURRENCY")',
+  [c.LIST]: 'Show all watched coins',
+  [c.HELP]: 'Show available commands',
+  [c.ADD]: 'Add new coin subscription ("/add NEW_COIN START_PRICE END_PRICE")',
+  [c.REMOVE]: 'Remove coin subscription ("/remove FIRST_CURRENCY")',
 };

@@ -1,25 +1,32 @@
 import bot from './telegram-service.js';
-import eventEmitter from '../utils/event-emitter.js';
 import c from '../constants/constants.js';
-import CommandMessages from '../constants/command-messages.js';
-import { handleSubscribeToPriceUpdate } from './handle-subscribe-to-price-updates-service.js';
+import commandMessages from '../constants/command-messages.js';
+import {
+  subscribeToPriceUpdates,
+  unsubscribeFromPriceUpdates,
+} from './handle-subscribe-to-price-updates-service.js';
 import getAvailableTickers from './load-available-tickers-service.js';
 import { stringifyCommandMessages, isTickerAvailable } from '../utils/utils.js';
+import { showWatchedCurrencyPairs } from '../utils/telegram-events-handlers.js';
 
 const availableTickers = await getAvailableTickers();
 
-let chatId;
-
 export default () => {
   bot.on('message', msg => {
-    chatId = msg.chat.id;
+    const chatId = msg.chat.id;
     const splittedMessageText = msg.text.split(' ');
     const command = splittedMessageText.at(0);
-    const ticker = splittedMessageText[1]
+    const tickerName = splittedMessageText[1]
       ? splittedMessageText[1].toUpperCase()
       : '';
+    const startPrice = splittedMessageText[2]
+      ? parseFloat(splittedMessageText[2].replace(',', '.'))
+      : null;
+    const endPrice = splittedMessageText[3]
+      ? parseFloat(splittedMessageText[3].replace(',', '.'))
+      : null;
 
-    const helpMessage = stringifyCommandMessages(CommandMessages);
+    const helpMessage = stringifyCommandMessages(commandMessages);
 
     switch (command) {
       case c.START:
@@ -29,33 +36,39 @@ export default () => {
         bot.sendMessage(chatId, helpMessage);
         break;
       case c.LIST:
-        // if (!watchedTickers.length) {
-        //   bot.sendMessage(chatId, "There aren't added tickers!");
-        //   break;
-        // }
-        // bot.sendMessage(chatId, watchedTickers.join(', '));
+        bot.sendMessage(chatId, showWatchedCurrencyPairs(chatId));
         break;
       case c.ADD:
-        if (!ticker) {
+        if (!tickerName) {
           bot.sendMessage(chatId, 'Enter ticker name!');
           break;
         }
 
-        if (!isTickerAvailable(ticker, availableTickers)) {
+        if (!isTickerAvailable(tickerName, availableTickers)) {
           bot.sendMessage(chatId, 'Unknown ticker! Try again.');
           break;
         }
 
-        handleSubscribeToPriceUpdate(ticker);
-        bot.sendMessage(chatId, `Ticker ${ticker} added successfully!`);
+        if (
+          !startPrice ||
+          !endPrice ||
+          typeof startPrice !== 'number' ||
+          typeof endPrice !== 'number'
+        ) {
+          bot.sendMessage(chatId, 'Incorrect prices! Try again.');
+          break;
+        }
+
+        subscribeToPriceUpdates(chatId, tickerName, startPrice, endPrice);
+        bot.sendMessage(chatId, `Ticker ${tickerName} added successfully!`);
         break;
       case c.REMOVE:
-        if (!ticker) {
+        if (!tickerName) {
           bot.sendMessage(chatId, 'Enter ticker name!');
           break;
         }
-        // watchedTickers = watchedTickers.filter(t => t !== ticker);
-        bot.sendMessage(chatId, `Ticker ${ticker} removed successfully!`);
+        unsubscribeFromPriceUpdates(chatId, tickerName);
+        bot.sendMessage(chatId, `Ticker ${tickerName} removed successfully!`);
         break;
       default:
         bot.sendMessage(chatId, 'helpMessage');
@@ -63,7 +76,3 @@ export default () => {
     }
   });
 };
-
-eventEmitter.on('subscribe', payload => {
-  bot.sendMessage(chatId, payload);
-});
