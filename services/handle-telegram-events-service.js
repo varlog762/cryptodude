@@ -28,51 +28,52 @@ export default () => {
 
     const helpMessage = stringifyCommandMessages(commandMessages);
 
-    switch (command) {
-      case c.START:
-        bot.sendMessage(chatId, helpMessage);
-        break;
-      case c.HELP:
-        bot.sendMessage(chatId, helpMessage);
-        break;
-      case c.LIST:
-        bot.sendMessage(chatId, showWatchedCurrencyPairs(chatId));
-        break;
-      case c.ADD:
-        if (!tickerName) {
-          bot.sendMessage(chatId, 'Enter ticker name!');
-          break;
-        }
-
-        if (!isTickerAvailable(tickerName, availableTickers)) {
-          bot.sendMessage(chatId, 'Unknown ticker! Try again.');
-          break;
-        }
-
-        if (
-          !startPrice ||
-          !endPrice ||
-          typeof startPrice !== 'number' ||
-          typeof endPrice !== 'number'
-        ) {
-          bot.sendMessage(chatId, 'Incorrect prices! Try again.');
-          break;
-        }
-
-        subscribeToPriceUpdates(chatId, tickerName, startPrice, endPrice);
-        bot.sendMessage(chatId, `Ticker ${tickerName} added successfully!`);
-        break;
-      case c.REMOVE:
-        if (!tickerName) {
-          bot.sendMessage(chatId, 'Enter ticker name!');
-          break;
-        }
-        unsubscribeFromPriceUpdates(chatId, tickerName);
-        bot.sendMessage(chatId, `Ticker ${tickerName} removed successfully!`);
-        break;
-      default:
-        bot.sendMessage(chatId, 'helpMessage');
-        break;
+    if (command === c.START || command === c.HELP) {
+      bot.sendMessage(chatId, helpMessage);
+      return;
     }
+
+    if (command === c.LIST) {
+      bot.sendMessage(chatId, showWatchedCurrencyPairs(chatId));
+      return;
+    }
+
+    if (command === c.ADD) {
+      if (!tickerName) {
+        bot.sendMessage(chatId, 'Enter ticker name!');
+        return;
+      }
+
+      if (!isTickerAvailable(tickerName, availableTickers)) {
+        bot.sendMessage(chatId, 'Unknown ticker! Try again.');
+        return;
+      }
+
+      if (
+        !startPrice ||
+        !endPrice ||
+        typeof startPrice !== 'number' ||
+        typeof endPrice !== 'number'
+      ) {
+        bot.sendMessage(chatId, 'Incorrect prices! Try again.');
+        return;
+      }
+
+      subscribeToPriceUpdates(chatId, tickerName, startPrice, endPrice);
+      bot.sendMessage(chatId, `Ticker ${tickerName} added successfully!`);
+      return;
+    }
+
+    if (command === c.REMOVE) {
+      if (!tickerName) {
+        bot.sendMessage(chatId, 'Enter ticker name!');
+        return;
+      }
+      unsubscribeFromPriceUpdates(chatId, tickerName);
+      bot.sendMessage(chatId, `Ticker ${tickerName} removed successfully!`);
+      return;
+    }
+
+    bot.sendMessage(chatId, helpMessage);
   });
 };
