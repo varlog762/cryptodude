@@ -10,7 +10,7 @@ export const getWatchList = () => tickersWatchList.slice();
 // TODO: Rename it
 const createObject = (chatId, tickerName, startPrice, endPrice) => ({
   tickerName,
-  currencyPair: `${tickerName}/USDT`,
+  currencyPair: `${tickerName}-USDT`,
   startPrice,
   endPrice,
   chatId,
