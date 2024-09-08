@@ -9,4 +9,13 @@ export default {
   OKX_WS_URL: 'wss://ws.okx.com:8443/ws/v5/public',
   SUBSCRIBE_TO_TICKER_PRICE_UPDATE: 'subscribe',
   UNSUBSCRIBE_FROM_TICKER_PRICE_UPDATE: 'unsubscribe',
+  WEBSOCKET_ERROR: 'WebSocket error: ',
+  LOAD_TICKERS_ERROR: 'Tickers loading failed!',
+  BAD_RESPONSE_WARNING: 'Bad response!',
+  ENTER_TICKER_NAME_WARNING: 'Enter ticker name!',
+  INVALID_PRICE_WARNING: 'Invalid price! Please enter a valid number.',
+  WEBSOCKET_OPENED_INFO: 'Connected to WebSocket',
+  WEBSOCKET_CLOSED_INFO: 'Connection to WebSocket closed!',
+  WEBSOCKET_RECONNECT_INFO: `Attempting to reconnect to WebSocket...`,
+  SENDING_PING_INFO: `Sending ping`,
 };

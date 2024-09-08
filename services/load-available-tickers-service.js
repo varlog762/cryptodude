@@ -1,27 +1,29 @@
 import axios from 'axios';
 
-import C from '../constants/constants.js';
+import c from '../constants/constants.js';
 
-// eslint-disable-next-line consistent-return
 export default async () => {
   try {
-    const response = await axios.get(C.LOAD_TICKERS_URL);
+    const response = await axios.get(c.LOAD_TICKERS_URL);
 
     if (response.status !== 200) {
-      throw new Error('Tickers loading failed!');
+      throw new Error(c.LOAD_TICKERS_ERROR);
     }
 
-    const data = response.data.Data;
+    const data = response?.data?.Data;
 
-    if (data) {
-      return Object.values(data).map(ticker => ({
-        symbol: ticker?.Symbol,
-        fullName: ticker?.FullName,
-      }));
+    if (!data) {
+      throw new Error(c.BAD_RESPONSE_WARNING);
     }
+    const tickerList = Object.values(data).map(ticker => ({
+      symbol: ticker?.Symbol,
+      fullName: ticker?.FullName,
+    }));
 
-    throw new Error('Bad response');
+    return tickerList;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
+
+  return [];
 };

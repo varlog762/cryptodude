@@ -18,3 +18,19 @@ export const createMessageForWebSocket = (tickerName, command) =>
       },
     ],
   });
+
+export const createTickerWatchEntry = (chatId, tickerName, originalPrice) => ({
+  tickerName,
+  currencyPair: `${tickerName}-USDT`,
+  originalPrice,
+  lastPrice: 0,
+  priceIncreasePercent: 5,
+  priceDecreasePercent: 5,
+  chatId,
+});
+
+export const createEmitPayload = (chatId, tickerName, originalPrice) => ({
+  chatId,
+  tickerName,
+  originalPrice,
+});
