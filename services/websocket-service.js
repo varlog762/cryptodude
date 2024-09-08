@@ -45,7 +45,7 @@ class WebSocketService {
 
       if (message.event === 'subscribe' && message.connId) {
         const tickerName = message.arg.instId.split('-').at(0);
-        this.eventEmitter.emit(events.SUBSCRIBE_SUCCESS, tickerName);
+        this.eventEmitter.emit(events.SUBSCRIPTION_SUCCESS, tickerName);
       }
 
       if (message.event !== 'error' && message.data) {

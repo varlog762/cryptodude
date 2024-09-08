@@ -27,20 +27,34 @@ const eventListenerService = services => {
     bot.sendMessage(chatId, c.UNAVAILABLE_TICKER_WARNING)
   );
 
-  eventEmitter.on(events.SUBSCRIBE_SUCCESS, tickerName => {
-    priceSubscriptionService.emitSubscribeComplete(tickerName);
+  eventEmitter.on(events.SHOW_SUBSCRIPTIONS, chatId =>
+    priceSubscriptionService.showSubscriptions(chatId)
+  );
+
+  eventEmitter.on(events.SHOW_SUBSCRIPTIONS_SUCCESS, ({ chatId, message }) => {
+    bot.sendMessage(chatId, message);
   });
 
-  eventEmitter.on(events.ADD_TICKER, ticker =>
+  eventEmitter.on(events.SUBSCRIPTION_SUCCESS, tickerName => {
+    priceSubscriptionService.notifySubscriptionSuccess(tickerName);
+  });
+
+  eventEmitter.on(events.ADD_SUBSCRIPTION, ticker =>
     priceSubscriptionService.subscribe(ticker)
   );
 
-  eventEmitter.on(events.ADD_TICKER_SUCCESS, ({ chatId, tickerName }) =>
+  eventEmitter.on(events.ADD_SUBSCRIPTION_SUCCESS, ({ chatId, tickerName }) =>
     bot.sendMessage(chatId, `Subscription to ${tickerName} completed!`)
   );
 
-  eventEmitter.on(events.REMOVE_TICKER, ticker =>
+  eventEmitter.on(events.REMOVE_SUBSCRIPTION, ticker =>
     priceSubscriptionService.unsubscribe(ticker)
+  );
+
+  eventEmitter.on(
+    events.REMOVE_SUBSCRIPTION_SUCCESS,
+    ({ chatId, tickerName }) =>
+      bot.sendMessage(chatId, `Subscription to ${tickerName} canceled!`)
   );
 };
 

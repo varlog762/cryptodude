@@ -48,7 +48,7 @@ class TelegramBotService {
     }
 
     if (command === c.LIST) {
-      this.eventEmitter.emit(events.SHOW_SUBSCRIBES);
+      this.eventEmitter.emit(events.SHOW_SUBSCRIPTIONS, chatId);
       return;
     }
 
@@ -58,7 +58,9 @@ class TelegramBotService {
       const ticker = createEmitPayload(chatId, tickerName, originalPrice);
 
       const event =
-        command === c.ADD ? events.ADD_TICKER : events.REMOVE_TICKER;
+        command === c.ADD
+          ? events.ADD_SUBSCRIPTION
+          : events.REMOVE_SUBSCRIPTION;
 
       this.eventEmitter.emit(event, ticker);
 

@@ -28,17 +28,19 @@ class PriceSubscriptionService {
 
     if (this.isSubscribed(tickerName)) {
       this.tickerWatchList.push(ticker);
+      console.log(this.tickerWatchList);
 
       const payload = {
         chatId,
         tickerName,
       };
-      this.eventEmitter.emit(events.ADD_TICKER_SUCCESS, payload);
+      this.eventEmitter.emit(events.ADD_SUBSCRIPTION_SUCCESS, payload);
 
       return;
     }
 
     this.tickerWatchList.push(ticker);
+    console.log(this.tickerWatchList);
     this.subscriptionsRegistry.set(tickerName, chatId);
 
     const message = createMessageForWebSocket(
@@ -54,13 +56,20 @@ class PriceSubscriptionService {
 
     this.tickerWatchList = this.tickerWatchList.filter(
       t =>
-        t.chatId !== chatId &&
-        t.tickerName !== tickerName &&
+        t.chatId !== chatId ||
+        t.tickerName !== tickerName ||
         t.originalPrice !== originalPrice
     );
+    console.log(this.tickerWatchList);
+
+    const payload = {
+      chatId,
+      tickerName,
+    };
+
+    this.eventEmitter.emit(events.REMOVE_SUBSCRIPTION_SUCCESS, payload);
 
     if (this.isSubscribed(tickerName)) {
-      this.eventEmitter.emit(events.REMOVE_TICKER_SUCCESS, tickerName);
       return;
     }
 
@@ -69,8 +78,6 @@ class PriceSubscriptionService {
       c.UNSUBSCRIBE_FROM_TICKER_PRICE_UPDATE
     );
     this.eventEmitter.emit(events.SEND_TO_WEBSOCKET, message);
-
-    this.eventEmitter.emit(events.REMOVE_TICKER_SUCCESS, tickerName);
   }
 
   isTickerAvailable(tickerName) {
@@ -80,10 +87,11 @@ class PriceSubscriptionService {
   }
 
   isSubscribed(tickerName) {
+    console.log(this.tickerWatchList.some(t => t.tickerName === tickerName));
     return this.tickerWatchList.some(t => t.tickerName === tickerName);
   }
 
-  emitSubscribeComplete(tickerName) {
+  notifySubscriptionSuccess(tickerName) {
     const chatId = this.subscriptionsRegistry.get(tickerName);
     this.subscriptionsRegistry.delete(tickerName);
 
@@ -92,7 +100,24 @@ class PriceSubscriptionService {
       tickerName,
     };
 
-    this.eventEmitter.emit(events.ADD_TICKER_SUCCESS, payload);
+    this.eventEmitter.emit(events.ADD_SUBSCRIPTION_SUCCESS, payload);
+  }
+
+  showSubscriptions(chatId) {
+    const message = this.tickerWatchList
+      .filter(t => t.chatId === chatId)
+      .map(
+        t =>
+          `${t.currencyPair}: original price ${t.originalPrice}, last price ${t.lastPrice}`
+      )
+      .join('\n');
+
+    const payload = {
+      chatId,
+      message,
+    };
+
+    this.eventEmitter.emit(events.SHOW_SUBSCRIPTIONS_SUCCESS, payload);
   }
 }
 
