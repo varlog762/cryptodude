@@ -8,16 +8,15 @@ export const stringifyCommandMessages = messageObject =>
     .map(item => `${item[0]} - ${item[1]}`)
     .join('\n');
 
-export const createMessageForWebSocket = (tickerName, command) =>
-  JSON.stringify({
-    op: command,
-    args: [
-      {
-        channel: 'tickers',
-        instId: `${tickerName}-USDT`,
-      },
-    ],
-  });
+export const createMessageForWebSocket = (tickerName, command) => ({
+  op: command,
+  args: [
+    {
+      channel: 'tickers',
+      instId: `${tickerName}-USDT`,
+    },
+  ],
+});
 
 export const createTickerWatchEntry = (chatId, tickerName, originalPrice) => ({
   tickerName,

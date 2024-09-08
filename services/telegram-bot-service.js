@@ -19,7 +19,6 @@ class TelegramBotService {
 
   start() {
     this.bot = new TelegramBot(this.token, { polling: true });
-    this.startListenMessages();
   }
 
   startListenMessages() {
@@ -28,7 +27,7 @@ class TelegramBotService {
       this.chatsList.add(chatId);
 
       const splittedMessageText = msg.text.split(' ');
-      const command = splittedMessageText.at(0);
+      const command = splittedMessageText[0];
 
       const tickerName = splittedMessageText[1]
         ? splittedMessageText[1].toUpperCase()
@@ -54,7 +53,7 @@ class TelegramBotService {
     }
 
     if (command === c.ADD || command === c.REMOVE) {
-      if (!this.validateTickerData(tickerName, originalPrice, chatId)) return;
+      if (!this.validateTickerData(chatId, tickerName, originalPrice)) return;
 
       const ticker = createEmitPayload(chatId, tickerName, originalPrice);
 
@@ -62,6 +61,7 @@ class TelegramBotService {
         command === c.ADD ? events.ADD_TICKER : events.REMOVE_TICKER;
 
       this.eventEmitter.emit(event, ticker);
+
       return;
     }
 
@@ -70,7 +70,7 @@ class TelegramBotService {
 
   validateTickerData(chatId, tickerName, originalPrice) {
     return (
-      this.isTickerName(tickerName, chatId) &&
+      this.isTickerName(chatId, tickerName) &&
       this.isOriginalPrice(chatId, originalPrice)
     );
   }
@@ -93,6 +93,10 @@ class TelegramBotService {
 
   sendToAll(message) {
     this.chatsList.forEach(chatId => this.bot.sendMessage(chatId, message));
+  }
+
+  sendMessage(chatId, message) {
+    this.bot.sendMessage(chatId, message);
   }
 }
 

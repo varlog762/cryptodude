@@ -9,31 +9,49 @@ import events from '../constants/events.js';
 class PriceSubscriptionService {
   tickerWatchList = [];
 
+  subscriptionsRegistry = new Map();
+
   constructor(eventEmitter, availableTickers) {
     this.eventEmitter = eventEmitter;
     this.availableTickers = availableTickers;
   }
 
-  subscribe(chatId, tickerName, originalPrice) {
+  subscribe(tickerProp) {
+    const { chatId, tickerName, originalPrice } = tickerProp;
+
     if (!this.isTickerAvailable(tickerName)) {
-      this.eventEmitter.emit(events.UNAVAILABLE_TICKER);
+      this.eventEmitter.emit(events.UNAVAILABLE_TICKER, chatId);
+      return;
     }
 
     const ticker = createTickerWatchEntry(chatId, tickerName, originalPrice);
-    this.tickerWatchList.push(ticker);
 
     if (this.isSubscribed(tickerName)) {
+      this.tickerWatchList.push(ticker);
+
+      const payload = {
+        chatId,
+        tickerName,
+      };
+      this.eventEmitter.emit(events.ADD_TICKER_SUCCESS, payload);
+
       return;
     }
+
+    this.tickerWatchList.push(ticker);
+    this.subscriptionsRegistry.set(tickerName, chatId);
 
     const message = createMessageForWebSocket(
       tickerName,
       c.SUBSCRIBE_TO_TICKER_PRICE_UPDATE
     );
+
     this.eventEmitter.emit(events.SEND_TO_WEBSOCKET, message);
   }
 
-  unsubscribe(chatId, tickerName, originalPrice) {
+  unsubscribe(tickerProp) {
+    const { chatId, tickerName, originalPrice } = tickerProp;
+
     this.tickerWatchList = this.tickerWatchList.filter(
       t =>
         t.chatId !== chatId &&
@@ -63,6 +81,18 @@ class PriceSubscriptionService {
 
   isSubscribed(tickerName) {
     return this.tickerWatchList.some(t => t.tickerName === tickerName);
+  }
+
+  emitSubscribeComplete(tickerName) {
+    const chatId = this.subscriptionsRegistry.get(tickerName);
+    this.subscriptionsRegistry.delete(tickerName);
+
+    const payload = {
+      chatId,
+      tickerName,
+    };
+
+    this.eventEmitter.emit(events.ADD_TICKER_SUCCESS, payload);
   }
 }
 

@@ -42,6 +42,12 @@ class WebSocketService {
   startListenMessage() {
     this.socket.on('message', data => {
       const message = JSON.parse(data);
+
+      if (message.event === 'subscribe' && message.connId) {
+        const tickerName = message.arg.instId.split('-').at(0);
+        this.eventEmitter.emit(events.SUBSCRIBE_SUCCESS, tickerName);
+      }
+
       if (message.event !== 'error' && message.data) {
         const { instId: currencyPair, last: lastPrice } = message.data.at(0);
 
@@ -50,7 +56,7 @@ class WebSocketService {
           lastPrice,
         };
 
-        console.log(currencyPair, lastPrice);
+        // console.log(currencyPair, lastPrice);
 
         this.eventEmitter.emit(events.PRICE_UPDATED, updatedPrice);
       }
@@ -80,6 +86,7 @@ class WebSocketService {
 
     setTimeout(() => {
       console.log(c.WEBSOCKET_RECONNECT_INFO);
+      this.eventEmitter.emit('websocket-reconnect');
       this.connect();
     }, this.reconnectInterval);
   }
@@ -95,6 +102,15 @@ class WebSocketService {
 
   stopPing() {
     clearInterval(this.pingIntervalFn);
+  }
+
+  send(message) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(message));
+      console.log('Message sent to WebSocket:', message);
+    } else {
+      console.error('WebSocket is not connected.');
+    }
   }
 }
 

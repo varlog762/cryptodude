@@ -1,11 +1,12 @@
 import 'dotenv/config';
 import { EventEmitter } from 'node:events';
 
+import c from './constants/constants.js';
 import WebSocketService from './services/websocket-service.js';
 import TelegramBotService from './services/telegram-bot-service.js';
 import PriceSubscriptionService from './services/price-subscription-service.js';
 import loadAvailableTickers from './services/load-available-tickers-service.js';
-import c from './constants/constants.js';
+import eventListenerService from './services/event-listener-service.js';
 
 const { TELEGRAM_TOKEN } = process.env;
 
@@ -26,20 +27,10 @@ const startApp = async () => {
   );
 
   const services = { eventEmitter, socket, bot, priceSubscriptionService };
+
+  eventListenerService(services);
 };
 
 startApp();
 
 // TODO: implement user notification via telegram when OKX approves subscription
-
-// TODO: implement sending messages
-// eventEmitter.on('send-to-websocket', message => {
-//   socket.send(message);
-// });
-
-// TODO: implement this:
-// eventEmitter.on('websocket-closed', () => {
-//   telegramChatsList.forEach(chatId =>
-//     bot.sendMessage(chatId, 'Connection to WebSocket closed!')
-//   );
-// });
