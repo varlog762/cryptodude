@@ -33,4 +33,3 @@ const startApp = async () => {
 
 startApp();
 
-// TODO: implement user notification via telegram when OKX approves subscription
