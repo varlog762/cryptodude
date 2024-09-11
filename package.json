@@ -1,7 +1,7 @@
 {
   "name": "cryptodude",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "0.0.1",
+  "main": "app.js",
   "type": "module",
   "scripts": {
     "start": "node ./app.js",
@@ -24,6 +24,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "nodemon": "^3.1.4",
     "prettier": "^3.3.3"
   }
 }

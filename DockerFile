@@ -1,13 +1,17 @@
-FROM node
+FROM node:alpine
 
 WORKDIR /app
 
-COPY ./package*.json ./
+EXPOSE 3000
+
+COPY package* ./
+
+ENV NODE_ENV=development
 
 RUN npm install
 
-COPY . .
+COPY . ./
 
-EXPOSE 3000
+CMD [ "npm", "run", "start" ]
 
-CMD ["npm", "start"]
+# docker run -it --rm -v $(pwd):/app -p 8080:8080 crypto-dude
