@@ -6,7 +6,7 @@ EXPOSE 8080
 
 COPY package* ./
 
-ENV NODE_ENV=development
+# ENV NODE_ENV=development
 
 RUN npm install
 
