@@ -56,7 +56,7 @@ class WebSocketService {
           lastPrice,
         };
 
-        // console.log(currencyPair, lastPrice);
+        console.log(message.data.at(0));
 
         this.eventEmitter.emit(events.PRICE_UPDATED, updatedPrice);
       }

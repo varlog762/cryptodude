@@ -19,4 +19,5 @@ export default {
   WEBSOCKET_CLOSED_INFO: 'Connection to WebSocket closed!',
   WEBSOCKET_RECONNECT_INFO: `Attempting to reconnect to WebSocket...`,
   SENDING_PING_INFO: `Sending ping`,
+  OLLAMA_HOST_URL: 'http://192.168.100.100:11434',
 };
